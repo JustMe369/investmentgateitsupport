@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Gate IT Support System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page">
+        <div class="login-container">
+            <div class="login-logo">
+                <i class="fas fa-laptop-code"></i>
+                <h1>INV | IT Support</h1>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div id="loginAlert" class="mb-2"></div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application (hidden until login) -->
+    <div id="app-container">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <i class="fas fa-laptop-code"></i>
+                        <h1>Investment-Gate IT Support</h1>
+                    </div>
+                    <div class="user-info">
+                        <span>Welcome, <strong id="user-display"></strong></span>
+                        <button class="logout-btn" id="logout-btn">Logout</button>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active">Dashboard</a></li>
+                        <li><a href="#">IT Missions</a></li>
+                        <li><a href="#">Locations</a></li>
+                        <li><a href="#">Equipment</a></li>
+                        <li><a href="#">Reports</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <div class="container main-content">
+            <div class="dashboard">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Open Tickets</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                    </div>
+                    <p>Currently active support tickets</p>
+                    <h2>12</h2>
+                    <a href="#" class="btn">View All</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Support Locations</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                    </div>
+                    <p>Number of supported locations</p>
+                    <h2>8</h2>
+                    <a href="#" class="btn">Manage</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>IT Equipment</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                    </div>
+                    <p>Tracked devices and equipment</p>
+                    <h2>142</h2>
+                    <a href="#" class="btn">View Inventory</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Reports</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                    </div>
+                    <p>Generate performance reports</p>
+                    <a href="#" class="btn">Create Report</a>
+                </div>
+            </div>
+
+            <!-- Tabs for different forms -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="ticket">IT Missions</button>
+                <button class="tab-btn" data-tab="location">IT Support Locations</button>
+                <button class="tab-btn" data-tab="equipment">IT Equipment</button>
+                <button class="tab-btn" data-tab="report">Reports</button>
+            </div>
+
+            <!-- IT Missions Form -->
+            <div class="tab-content active" id="ticket-tab">
+                <div class="form-section">
+                    <h2>Open New Support Ticket</h2>
+                    <form id="ticketForm">
+                        <div class="form-group">
+                            <label for="clientName">Client Name *</label>
+                            <input type="text" id="clientName" class="form-control" placeholder="Enter client name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="clientEmail">Client Email *</label>
+                            <input type="email" id="clientEmail" class="form-control" placeholder="Enter client email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="clientPhone">Client Phone</label>
+                            <input type="tel" id="clientPhone" class="form-control" placeholder="Enter client phone number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location">Support Location *</label>
+                            <select id="location" class="form-control" required>
+                                <option value="">Select a location</option>
+                                <option value="Main Office">Main Office</option>
+                                <option value="Branch 1">Branch 1</option>
+                                <option value="Branch 2">Branch 2</option>
+                                <option value="Remote">Remote</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deviceType">Device Type *</label>
+                            <select id="deviceType" class="form-control" required>
+                                <option value="">Select device type</option>
+                                <option value="CAPS">CAPS</option>
+                                <option value="KDS">KDS</option>
+                                <option value="Router">Router</option>
+                                <option value="Access Point">Access Point</option>
+                                <option value="DVR">DVR</option>
+                                <option value="NVR">NVR</option>
+                                <option value="Receipt Printer">Receipt Printer</option>
+                                <option value="Manager Printer">Manager Printer</option>
+                                <option value="TV Menu Show">TV Menu Show</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ipAddress">IP Address (if applicable)</label>
+                            <input type="text" id="ipAddress" class="form-control" placeholder="e.g., 192.168.1.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="anydesk">Anydesk ID</label>
+                            <input type="text" id="anydesk" class="form-control" placeholder="Enter Anydesk ID">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="issueDescription">Issue Description *</label>
+                            <textarea id="issueDescription" class="form-control" rows="5" placeholder="Describe the issue in detail" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="priority">Priority *</label>
+                            <select id="priority" class="form-control" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                    </form>
+                </div>
+
+                <!-- Recent Tickets Table -->
+                <div class="form-section">
+                    <h2>Recent Support Tickets</h2>
+                    <div class="table-container">
+                        <table id="tickets-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket ID</th>
+                                    <th>Client</th>
+                                    <th>Location</th>
+                                    <th>Device</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tickets-table-body">
+                                <!-- Ticket rows will be inserted here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IT Support Locations Form -->
+            <div class="tab-content" id="location-tab">
+                <div class="form-section">
+                    <h2>Add New Support Location</h2>
+                    <form id="locationForm">
+                        <div class="form-group">
+                            <label for="locationName">Location Name *</label>
+                            <input type="text" id="locationName" class="form-control" placeholder="Enter location name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="locationAddress">Address *</label>
+                            <textarea id="locationAddress" class="form-control" rows="3" placeholder="Enter full address" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="locationContact">Contact Person *</label>
+                            <input type="text" id="locationContact" class="form-control" placeholder="Enter contact person name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="locationPhone">Contact Phone *</label>
+                            <input type="tel" id="locationPhone" class="form-control" placeholder="Enter contact phone number" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="locationAnydesk">Anydesk ID *</label>
+                            <input type="text" id="locationAnydesk" class="form-control" placeholder="Enter Anydesk ID" required>
+                        </div>
+                        
+                        <h3>Devices at this Location</h3>
+                        
+                        <div class="form-group">
+                            <label for="deviceTypeLocation">Device Type *</label>
+                            <select id="deviceTypeLocation" class="form-control" required>
+                                <option value="">Select device type</option>
+                                <option value="CAPS">CAPS</option>
+                                <option value="KDS">KDS</option>
+                                <option value="Router">Router</option>
+                                <option value="Access Point">Access Point</option>
+                                <option value="DVR">DVR</option>
+                                <option value="NVR">NVR</option>
+                                <option value="Receipt Printer">Receipt Printer</option>
+                                <option value="Manager Printer">Manager Printer</option>
+                                <option value="TV Menu Show">TV Menu Show</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deviceIpLocation">IP Address</label>
+                            <input type="text" id="deviceIpLocation" class="form-control" placeholder="e.g., 192.168.1.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="deviceModel">Model/Serial Number</label>
+                            <input type="text" id="deviceModel" class="form-control" placeholder="Enter device model or serial number">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Add Location</button>
+                    </form>
+                </div>
+
+                <!-- Locations Table -->
+                <div class="form-section">
+                    <h2>Supported Locations</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Location Name</th>
+                                    <th>Address</th>
+                                    <th>Contact</th>
+                                    <th>Anydesk ID</th>
+                                    <th>Devices</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Main Office</td>
+                                    <td>123 Tech Street, City</td>
+                                    <td>John Smith</td>
+                                    <td>123 456 789</td>
+                                    <td>12</td>
+                                    <td><a href="#" class="btn">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Branch 1</td>
+                                    <td>456 Support Ave, Town</td>
+                                    <td>Sarah Johnson</td>
+                                    <td>987 654 321</td>
+                                    <td>8</td>
+                                    <td><a href="#" class="btn">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Branch 2</td>
+                                    <td>789 IT Road, Village</td>
+                                    <td>Michael Brown</td>
+                                    <td>456 123 789</td>
+                                    <td>6</td>
+                                    <td><a href="#" class="btn">View</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IT Equipment Form -->
+            <div class="tab-content" id="equipment-tab">
+                <div class="form-section">
+                    <h2>Add New IT Equipment</h2>
+                    <form id="equipmentForm">
+                        <div class="form-group">
+                            <label for="equipmentType">Device Type *</label>
+                            <select id="equipmentType" class="form-control" required>
+                                <option value="">Select device type</option>
+                                <option value="CAPS">CAPS</option>
+                                <option value="KDS">KDS</option>
+                                <option value="Router">Router</option>
+                                <option value="Access Point">Access Point</option>
+                                <option value="DVR">DVR</option>
+                                <option value="NVR">NVR</option>
+                                <option value="Receipt Printer">Receipt Printer</option>
+                                <option value="Manager Printer">Manager Printer</option>
+                                <option value="TV Menu Show">TV Menu Show</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipmentModel">Model *</label>
+                            <input type="text" id="equipmentModel" class="form-control" placeholder="Enter device model" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipmentSerial">Serial Number *</label>
+                            <input type="text" id="equipmentSerial" class="form-control" placeholder="Enter serial number" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipmentLocation">Location *</label>
+                            <select id="equipmentLocation" class="form-control" required>
+                                <option value="">Select a location</option>
+                                <option value="Main Office">Main Office</option>
+                                <option value="Branch 1">Branch 1</option>
+                                <option value="Branch 2">Branch 2</option>
+                                <option value="Warehouse">Warehouse</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipmentIp">IP Address</label>
+                            <input type="text" id="equipmentIp" class="form-control" placeholder="e.g., 192.168.1.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="equipmentStatus">Status *</label>
+                            <select id="equipmentStatus" class="form-control" required>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Retired">Retired</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="installationDate">Installation Date</label>
+                            <input type="date" id="installationDate" class="form-control">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Add Equipment</button>
+                    </form>
+                </div>
+
+                <!-- Equipment Table -->
+                <div class="form-section">
+                    <h2>IT Equipment Inventory</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Device Type</th>
+                                    <th>Model</th>
+                                    <th>Serial Number</th>
+                                    <th>Location</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Router</td>
+                                    <td>Cisco RV340</td>
+                                    <td>SN-123456</td>
+                                    <td>Main Office</td>
+                                    <td>192.168.1.1</td>
+                                    <td><span class="status status-resolved">Active</span></td>
+                                    <td><a href="#" class="btn">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>CAPS</td>
+                                    <td>HP EliteDesk</td>
+                                    <td>SN-789012</td>
+                                    <td>Branch 1</td>
+                                    <td>192.168.2.10</td>
+                                    <td><span class="status status-open">Maintenance</span></td>
+                                    <td><a href="#" class="btn">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Receipt Printer</td>
+                                    <td>Epson TM-T88V</td>
+                                    <td>SN-345678</td>
+                                    <td>Branch 2</td>
+                                    <td>192.168.3.15</td>
+                                    <td><span class="status status-resolved">Active</span></td>
+                                    <td><a href="#" class="btn">View</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="tab-content" id="report-tab">
+                <div class="form-section">
+                    <h2>Generate Reports</h2>
+                    <form id="reportForm">
+                        <div class="form-group">
+                            <label for="reportType">Report Type *</label>
+                            <select id="reportType" class="form-control" required>
+                                <option value="">Select report type</option>
+                                <option value="tickets">Ticket Summary</option>
+                                <option value="response">Response Times</option>
+                                <option value="equipment">Equipment Status</option>
+                                <option value="location">Location Summary</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reportPeriod">Time Period *</label>
+                            <select id="reportPeriod" class="form-control" required>
+                                <option value="7">Last 7 Days</option>
+                                <option value="30">Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="customRangeGroup" style="display: none;">
+                            <div style="display: flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label for="startDate">Start Date</label>
+                                    <input type="date" id="startDate" class="form-control">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="endDate">End Date</label>
+                                    <input type="date" id="endDate" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reportFormat">Format</label>
+                            <select id="reportFormat" class="form-control">
+                                <option value="web">Web View</option>
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                    </form>
+                </div>
+
+                <!-- Report Results -->
+                <div class="form-section">
+                    <h2>Report Results</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Report Type</th>
+                                    <th>Generated On</th>
+                                    <th>Time Period</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ticket Summary</td>
+                                    <td>Oct 15, 2023</td>
+                                    <td>Last 30 Days</td>
+                                    <td>
+                                        <a href="#" class="btn"><i class="fas fa-eye"></i> View</a>
+                                        <a href="#" class="btn"><i class="fas fa-download"></i> Download</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Equipment Status</td>
+                                    <td>Oct 10, 2023</td>
+                                    <td>Last 7 Days</td>
+                                    <td>
+                                        <a href="#" class="btn"><i class="fas fa-eye"></i> View</a>
+                                        <a href="#" class="btn"><i class="fas fa-download"></i> Download</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Response Times</td>
+                                    <td>Oct 5, 2023</td>
+                                    <td>Last 90 Days</td>
+                                    <td>
+                                        <a href="#" class="btn"><i class="fas fa-eye"></i> View</a>
+                                        <a href="#" class="btn"><i class="fas fa-download"></i> Download</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <p>&copy; 2025 Investment Gate | Caribou IT Support System. All rights reserved.</p>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Success!</h2>
+            <p>Your form has been submitted successfully.</p>
+            <button class="btn btn-primary" id="modalCloseBtn">Close</button>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js" defer></script>
+</body>
+</html>

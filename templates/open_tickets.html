@@ -48,16 +48,49 @@
     }
     .refresh-btn {
         position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        width: 50px;
-        height: 50px;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         z-index: 1000;
+        transition: all 0.2s ease;
+        border: none;
+        background: #4e73df;
+        color: white;
+    }
+    
+    .refresh-btn:hover {
+        background: #2e59d9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    
+    .refresh-btn:active {
+        transform: translateY(0);
+    }
+    
+    .refresh-btn:disabled {
+        background: #b7c1e0;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    @media (max-width: 768px) {
+        .refresh-btn {
+            width: 50px;
+            height: 50px;
+            bottom: 1rem;
+            right: 1rem;
+        }
+        
+        .refresh-btn i {
+            font-size: 1.2rem;
+        }
     }
     .ticket-card .card-body {
         padding: 1.25rem;
@@ -217,22 +250,88 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Show loading state
+function setLoading(isLoading) {
+    const refreshBtn = document.getElementById('refresh-tickets');
+    const icon = refreshBtn.querySelector('i');
+    
+    if (isLoading) {
+        refreshBtn.disabled = true;
+        icon.classList.add('spin');
+    } else {
+        refreshBtn.disabled = false;
+        icon.classList.remove('spin');
+    }
+}
+
+// Show error message
+function showError(message) {
+    // Remove any existing error messages
+    const existingError = document.getElementById('refresh-error');
+    if (existingError) existingError.remove();
+    
+    if (!message) return;
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'refresh-error';
+    errorDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    errorDiv.role = 'alert';
+    errorDiv.innerHTML = `
+        <strong>Error:</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(errorDiv, container.firstChild);
+}
+
 // Refresh tickets
 function refreshTickets() {
-    fetch(window.location.href + '&partial=1')
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newContent = doc.getElementById('tickets-container');
-            const countElement = doc.getElementById('ticket-count');
-            
-            if (newContent) {
-                document.getElementById('tickets-container').innerHTML = newContent.innerHTML;
+    setLoading(true);
+    showError(''); // Clear any previous errors
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('partial', '1');
+    
+    fetch(url.toString(), {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'text/html',
+            'Cache-Control': 'no-cache'
+        },
+        cache: 'no-store'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newContent = doc.getElementById('tickets-container');
+        const countElement = doc.getElementById('ticket-count');
+        
+        if (!newContent) {
+            throw new Error('Could not find tickets container in response');
+        }
+        
+        // Use requestAnimationFrame for smoother updates
+        requestAnimationFrame(() => {
+            const container = document.getElementById('tickets-container');
+            if (container) {
+                // Only update if content has changed
+                if (container.innerHTML !== newContent.innerHTML) {
+                    container.innerHTML = newContent.innerHTML;
+                }
             }
             
             if (countElement) {
-                document.getElementById('ticket-count').textContent = countElement.textContent;
+                const currentCount = document.getElementById('ticket-count');
+                if (currentCount) {
+                    currentCount.textContent = countElement.textContent;
+                }
             }
             
             // Re-initialize time-ago
@@ -242,8 +341,15 @@ function refreshTickets() {
                     element.textContent = formatTimeAgo(timeString);
                 }
             });
-        })
-        .catch(error => console.error('Error refreshing tickets:', error));
+        });
+    })
+    .catch(error => {
+        console.error('Error refreshing tickets:', error);
+        showError('Failed to refresh tickets. Please try again.');
+    })
+    .finally(() => {
+        setLoading(false);
+    });
 }
 
 // Add spin animation
@@ -254,7 +360,34 @@ style.textContent = `
         to { transform: rotate(360deg); }
     }
     .spin {
-        animation: spin 0.7s linear 1;
+        animation: spin 0.7s linear infinite;
+    }
+    
+    /* Loading state for ticket cards */
+    .ticket-card.loading {
+        position: relative;
+        overflow: hidden;
+        min-height: 150px;
+    }
+    
+    .ticket-card.loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, 
+            rgba(255,255,255,0) 0%, 
+            rgba(255,255,255,0.5) 50%, 
+            rgba(255,255,255,0) 100%);
+        animation: shimmer 1.5s infinite;
+        z-index: 1;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
     }
 `;
 document.head.appendChild(style);

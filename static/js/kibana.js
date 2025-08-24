@@ -172,42 +172,6 @@ class KibanaIntegration {
 if (window) {
     window.KibanaIntegration = KibanaIntegration;
 }
-    }
-
-    // Create container for Kibana iframe
-    createContainer() {
-        // Remove existing container if any
-        const existingContainer = document.getElementById(this.iframeContainerId);
-        if (existingContainer) {
-            existingContainer.remove();
-        }
-
-        // Create container
-        const container = document.createElement('div');
-        container.id = this.iframeContainerId;
-        container.style.position = 'fixed';
-        container.style.bottom = '20px';
-        container.style.right = '20px';
-        container.style.width = '800px';
-        container.style.height = '600px';
-        container.style.zIndex = '1000';
-        container.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-        container.style.borderRadius = '8px';
-        container.style.overflow = 'hidden';
-        container.style.display = 'none';
-        container.style.flexDirection = 'column';
-
-        // Create header
-        const header = document.createElement('div');
-        header.style.padding = '10px';
-        header.style.background = '#f8f9fa';
-        header.style.borderBottom = '1px solid #dee2e6';
-        header.style.display = 'flex';
-        header.style.justifyContent = 'space-between';
-        header.style.alignItems = 'center';
-
-        const title = document.createElement('span');
-        title.textContent = 'Kibana Analytics';
         title.style.fontWeight = 'bold';
 
         const closeButton = document.createElement('button');
