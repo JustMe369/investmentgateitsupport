@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Login - INV-GATE IT Support{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Your existing CSS styles */
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Your existing HTML content -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    // Toggle password visibility
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            }
+        });
+    }
+    
+    // Set loading state for form submission
+    function setLoading(state) {
+        if (!loginBtn) return;
+        
+        const btnText = loginBtn.querySelector('.btn-text');
+        if (!btnText) return;
+        
+        if (state) {
+            loginBtn.disabled = true;
+            loginBtn.classList.add('btn-loading');
+            btnText.textContent = 'Signing in...';
+        } else {
+            loginBtn.disabled = false;
+            loginBtn.classList.remove('btn-loading');
+            btnText.textContent = 'Sign In';
+        }
+    }
+    
+    // Handle form submission
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(event) {
+            // Basic validation
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+            
+            if (!username.value.trim() || !password.value) {
+                event.preventDefault();
+                if (!username.value.trim()) {
+                    username.classList.add('is-invalid');
+                }
+                if (!password.value) {
+                    password.classList.add('is-invalid');
+                }
+                return;
+            }
+            
+            // Show loading state
+            setLoading(true);
+            
+            // The form will be submitted normally after this
+        });
+        
+        // Remove invalid class when user starts typing
+        const inputs = loginForm.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+            });
+        });
+    }
+    
+    // Auto-dismiss flash messages after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        });
+    }, 5000);
+    
+    // Add ripple effect to buttons
+    const buttons = document.querySelectorAll('.btn:not([type="button"])');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+});
+</script>
+{% endblock %}

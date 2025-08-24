@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Open Tickets - Investment Gate IT Support{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ticket-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-left: 4px solid #4e73df;
+        margin-bottom: 1rem;
+    }
+    .ticket-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .ticket-priority {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    .ticket-priority.high { color: #e74a3b; }
+    .ticket-priority.medium { color: #f6c23e; }
+    .ticket-priority.low { color: #1cc88a; }
+    .ticket-id {
+        color: #5a5c69;
+        font-weight: 600;
+    }
+    .ticket-meta {
+        font-size: 0.85rem;
+        color: #858796;
+    }
+    .ticket-actions .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        background: #f8f9fc;
+        border-radius: 0.35rem;
+        margin: 2rem 0;
+    }
+    .empty-state i {
+        font-size: 3rem;
+        color: #dddfeb;
+        margin-bottom: 1rem;
+    }
+    .refresh-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    .ticket-card .card-body {
+        padding: 1.25rem;
+    }
+    .ticket-title {
+        font-weight: 600;
+        color: #4e73df;
+        margin-bottom: 0.5rem;
+    }
+    .ticket-description {
+        color: #5a5c69;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Open Tickets</h1>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('create_ticket') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> Create New Ticket
+            </a>
+            <span class="badge bg-primary text-white px-3 py-2 d-none d-sm-inline-block">
+                <i class="bi bi-ticket-detailed me-1"></i>
+                <span id="ticket-count">{{ tickets|length }}</span> Open Tickets
+            </span>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <div class="col-12">
+            {% if tickets %}
+                <div class="row" id="tickets-container">
+                    {% for ticket in tickets %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card ticket-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <span class="ticket-id">#{{ ticket.id }}</span>
+                                        <span class="ticket-priority {{ ticket.priority|lower }}">
+                                            <i class="bi bi-flag-fill"></i> {{ ticket.priority }}
+                                        </span>
+                                    </div>
+                                    <div class="ticket-meta">
+                                        <i class="bi bi-clock"></i> 
+                                        <span class="time-ago" data-time="{{ ticket.created_at }}">
+                                            {{ ticket.created_at|datetimeformat('%Y-%m-%d %H:%M') }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <h5 class="ticket-title">{{ ticket.title }}</h5>
+                                <p class="ticket-description">{{ ticket.description|truncate(150) }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="ticket-meta">
+                                        <i class="bi bi-person"></i> 
+                                        {{ ticket.created_by_username }}
+                                        {% if ticket.assigned_to %}
+                                            <span class="ms-2">
+                                                <i class="bi bi-person-check"></i> 
+                                                {{ ticket.assigned_to_username or 'Unassigned' }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ticket-actions">
+                                        <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-check-circle"></i>
+                    <h4>No Open Tickets</h4>
+                    <p class="text-muted">There are currently no open tickets. Great job!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Refresh Button -->
+<button id="refresh-tickets" class="btn btn-primary refresh-btn" title="Refresh">
+    <i class="bi bi-arrow-clockwise"></i>
+</button>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Format relative time
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    let interval = Math.floor(seconds / 31536000);
+    if (interval > 1) return interval + ' years ago';
+    if (interval === 1) return '1 year ago';
+    
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) return interval + ' months ago';
+    if (interval === 1) return '1 month ago';
+    
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) return interval + ' days ago';
+    if (interval === 1) return '1 day ago';
+    
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) return interval + ' hours ago';
+    if (interval === 1) return '1 hour ago';
+    
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) return interval + ' minutes ago';
+    if (interval === 1) return '1 minute ago';
+    
+    return 'Just now';
+}
+
+// Update all time-ago elements
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.time-ago').forEach(function(element) {
+        const timeString = element.getAttribute('data-time');
+        if (timeString) {
+            element.textContent = formatTimeAgo(timeString);
+        }
+    });
+    
+    // Auto-refresh every 30 seconds
+    const refreshInterval = setInterval(refreshTickets, 30000);
+    
+    // Manual refresh button
+    document.getElementById('refresh-tickets').addEventListener('click', function() {
+        refreshTickets();
+        // Show loading state
+        const icon = this.querySelector('i');
+        icon.classList.add('bi-arrow-clockwise', 'spin');
+        setTimeout(() => {
+            icon.classList.remove('spin');
+        }, 1000);
+    });
+});
+
+// Refresh tickets
+function refreshTickets() {
+    fetch(window.location.href + '&partial=1')
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.getElementById('tickets-container');
+            const countElement = doc.getElementById('ticket-count');
+            
+            if (newContent) {
+                document.getElementById('tickets-container').innerHTML = newContent.innerHTML;
+            }
+            
+            if (countElement) {
+                document.getElementById('ticket-count').textContent = countElement.textContent;
+            }
+            
+            // Re-initialize time-ago
+            document.querySelectorAll('.time-ago').forEach(function(element) {
+                const timeString = element.getAttribute('data-time');
+                if (timeString) {
+                    element.textContent = formatTimeAgo(timeString);
+                }
+            });
+        })
+        .catch(error => console.error('Error refreshing tickets:', error));
+}
+
+// Add spin animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .spin {
+        animation: spin 0.7s linear 1;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

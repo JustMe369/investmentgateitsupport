@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Ticket - Investment Gate IT Support{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Create New Support Ticket</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('create_ticket') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Basic Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Ticket Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                                <div class="form-text">Briefly describe the issue</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+                                <div class="form-text">Please provide detailed information about the issue</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="priority" name="priority" required>
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="category" name="category" required>
+                                            <option value="hardware">Hardware</option>
+                                            <option value="software">Software</option>
+                                            <option value="network">Network</option>
+                                            <option value="email">Email</option>
+                                            <option value="account">Account</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location and Equipment -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Location & Equipment</h5>
+                            
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+                                <select class="form-select" id="location" name="location_id" required>
+                                    <option value="" disabled selected>Select a location</option>
+                                    {% for location in locations %}
+                                        <option value="{{ location.id }}">
+                                            {{ location.name }} - {{ location.address }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="equipment" class="form-label">Related Equipment (Optional)</label>
+                                <select class="form-select" id="equipment" name="equipment_id">
+                                    <option value="">Select equipment (if applicable)</option>
+                                    {% for equipment in equipment_list %}
+                                        <option value="{{ equipment.id }}">
+                                            {{ equipment.device_type }} - {{ equipment.model }} ({{ equipment.serial_number }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select the equipment this ticket is related to, if any</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="anydesk_id" class="form-label">Anydesk ID (Optional)</label>
+                                <input type="text" class="form-control" id="anydesk_id" name="anydesk_id" placeholder="e.g., 123 456 789">
+                                <div class="form-text">If remote support is needed, please provide your Anydesk ID</div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Contact Information</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="contact_name" class="form-label">Your Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="contact_name" name="contact_name" 
+                                               value="{{ current_user.full_name if current_user.is_authenticated else '' }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="contact_email" class="form-label">Email <span class="text-danger">*</span></label>
+                                        <input type="email" class="form-control" id="contact_email" name="contact_email" 
+                                               value="{{ current_user.email if current_user.is_authenticated else '' }}" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="contact_phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="contact_phone" name="contact_phone">
+                                <div class="form-text">Best number to reach you for support</div>
+                            </div>
+                        </div>
+
+                        <!-- File Attachments -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Attachments (Optional)</h5>
+                            <div class="mb-3">
+                                <input class="form-control" type="file" id="attachments" name="attachments" multiple>
+                                <div class="form-text">You can attach screenshots or other relevant files (Max size: 10MB)</div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('tickets') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send me-1"></i> Submit Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize form validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit', function(event) {
+            // Client-side validation can be added here
+            // For example, check if required fields are filled
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                event.preventDefault();
+                // Show error message
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.textContent = 'Please fill in all required fields.';
+                form.prepend(errorAlert);
+                
+                // Scroll to first error
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+        
+        // Clear validation on input
+        form.addEventListener('input', function(event) {
+            if (event.target.hasAttribute('required') && event.target.value.trim()) {
+                event.target.classList.remove('is-invalid');
+            }
+        });
+    });
+</script>
+{% endblock %}

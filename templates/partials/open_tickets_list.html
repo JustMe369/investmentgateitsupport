@@ -1,0 +1,54 @@
+{% if tickets %}
+    {% for ticket in tickets %}
+    <div class="col-lg-6 mb-4">
+        <div class="card ticket-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="ticket-id">#{{ ticket.id }}</span>
+                        <span class="ticket-priority {{ ticket.priority|lower }}">
+                            <i class="bi bi-flag-fill"></i> {{ ticket.priority }}
+                        </span>
+                    </div>
+                    <div class="ticket-meta">
+                        <i class="bi bi-clock"></i> 
+                        <span class="time-ago" data-time="{{ ticket.created_at }}">
+                            {{ ticket.created_at|datetimeformat('%Y-%m-%d %H:%M') }}
+                        </span>
+                    </div>
+                </div>
+                
+                <h5 class="ticket-title">{{ ticket.title }}</h5>
+                <p class="ticket-description">{{ ticket.description|truncate(150) }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="ticket-meta">
+                        <i class="bi bi-person"></i> 
+                        {{ ticket.created_by_username }}
+                        {% if ticket.assigned_to %}
+                            <span class="ms-2">
+                                <i class="bi bi-person-check"></i> 
+                                {{ ticket.assigned_to_username or 'Unassigned' }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="ticket-actions">
+                        <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="bi bi-check-circle"></i>
+            <h4>No Open Tickets</h4>
+            <p class="text-muted">There are currently no open tickets. Great job!</p>
+        </div>
+    </div>
+{% endif %}

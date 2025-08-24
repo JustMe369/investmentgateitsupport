@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Equipment - Investment Gate IT Support{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('equipment') }}">Equipment</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit Equipment</li>
+                </ol>
+            </nav>
+            <h1>Edit Equipment</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('edit_equipment', equipment_id=equipment.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="device_type" class="form-label">Device Type *</label>
+                            <select class="form-select" id="device_type" name="device_type" required>
+                                <option value="">Select Device Type</option>
+                                <option value="Laptop" {% if equipment.device_type == 'Laptop' %}selected{% endif %}>Laptop</option>
+                                <option value="Desktop" {% if equipment.device_type == 'Desktop' %}selected{% endif %}>Desktop</option>
+                                <option value="Monitor" {% if equipment.device_type == 'Monitor' %}selected{% endif %}>Monitor</option>
+                                <option value="Printer" {% if equipment.device_type == 'Printer' %}selected{% endif %}>Printer</option>
+                                <option value="Phone" {% if equipment.device_type == 'Phone' %}selected{% endif %}>Phone</option>
+                                <option value="Tablet" {% if equipment.device_type == 'Tablet' %}selected{% endif %}>Tablet</option>
+                                <option value="Server" {% if equipment.device_type == 'Server' %}selected{% endif %}>Server</option>
+                                <option value="Network Device" {% if equipment.device_type == 'Network Device' %}selected{% endif %}>Network Device</option>
+                                <option value="Other" {% if equipment.device_type == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="model" class="form-label">Model *</label>
+                            <input type="text" class="form-control" id="model" name="model" 
+                                   value="{{ equipment.model }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="serial_number" class="form-label">Serial Number</label>
+                            <input type="text" class="form-control" id="serial_number" name="serial_number"
+                                   value="{{ equipment.serial_number or '' }}">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status *</label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="In Stock" {% if equipment.status == 'In Stock' %}selected{% endif %}>In Stock</option>
+                                        <option value="In Use" {% if equipment.status == 'In Use' %}selected{% endif %}>In Use</option>
+                                        <option value="Maintenance" {% if equipment.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                                        <option value="Retired" {% if equipment.status == 'Retired' %}selected{% endif %}>Retired</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="assigned_to" class="form-label">Assigned To</label>
+                                    <select class="form-select" id="assigned_to" name="assigned_to">
+                                        <option value="">Unassigned</option>
+                                        {% for user in users %}
+                                            <option value="{{ user.id }}" 
+                                                {% if equipment.assigned_to == user.id %}selected{% endif %}>
+                                                {{ user.username }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location"
+                                   value="{{ equipment.location or '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ equipment.notes or '' }}</textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('view_equipment', equipment_id=equipment.id) }}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Equipment Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="mb-0">
+                        <dt>Created</dt>
+                        <dd>{{ equipment.created_at | datetimeformat('%Y-%m-%d %H:%M') }}</dd>
+                        
+                        {% if equipment.updated_at %}
+                        <dt>Last Updated</dt>
+                        <dd>{{ equipment.updated_at | datetimeformat('%Y-%m-%d %H:%M') }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

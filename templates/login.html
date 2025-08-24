@@ -1,0 +1,586 @@
+{% extends "base.html" %}
+
+{% block title %}Login - IT Support Portal{% endblock %}
+
+{# Hide navigation bar for login page #}
+{% set hide_nav = True %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+    body {
+        background-color: #000;
+        min-height: 100vh;
+        min-height: -webkit-fill-available; /* Fix for mobile viewport height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        overflow-y: auto;
+        position: relative;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        -webkit-overflow-scrolling: touch;
+        touch-action: manipulation; /* Improve touch response */
+    }
+    
+    #matrix-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+    
+    .login-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        box-sizing: border-box;
+    }
+    
+    .login-card {
+        background: rgba(10, 15, 10, 0.95);
+        border-radius: 12px;
+        box-shadow: 0 0 25px rgba(0, 255, 100, 0.3),
+                    0 0 15px rgba(0, 255, 100, 0.2) inset;
+        width: calc(100% - 2rem);
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        border: 1px solid rgba(0, 255, 100, 0.5);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .login-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 30px rgba(0, 255, 100, 0.4), 
+                    0 0 20px rgba(0, 255, 100, 0.3) inset;
+    }
+    
+    .matrix-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .login-title {
+        color: #00ff64;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(0, 255, 100, 0.7);
+        letter-spacing: 1px;
+    }
+    
+    .matrix-header p {
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+    
+    .matrix-icon {
+        font-size: 3rem;
+        color: #00ff64;
+        text-shadow: 0 0 15px rgba(0, 255, 100, 0.7);
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { text-shadow: 0 0 10px rgba(0, 255, 100, 0.7); }
+        50% { text-shadow: 0 0 20px rgba(0, 255, 100, 0.9); }
+        100% { text-shadow: 0 0 10px rgba(0, 255, 100, 0.7); }
+    }
+    
+    .form-label {
+        color: #00ff64;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-control:focus {
+        background-color: rgba(20, 25, 20, 0.8);
+        color: #00ff64;
+        border: 1px solid #00ff64;
+        border-radius: 5px;
+        padding: 0.625rem 0.75rem;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    .form-control:focus {
+        border-color: #00ff64;
+        box-shadow: 0 0 0 0.25rem rgba(0, 255, 100, 0.25);
+        background-color: #0a0f0a;
+        color: #fff;
+        outline: none;
+    }
+    
+    /* Improve touch targets for mobile */
+    .form-control, .btn {
+        min-height: 48px;
+        font-size: 16px; /* Prevent iOS zoom on focus */
+    }
+    
+    /* Better spacing for mobile */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    /* Adjust button styles for better touch */
+    .btn-login {
+        padding: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 1.25rem;
+        }
+        
+        .login-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-control, .btn {
+            min-height: 44px;
+        }
+        
+        .form-text {
+            font-size: 0.8rem;
+        }
+    }
+    
+    /* Fix for iOS form zoom */
+    @supports (-webkit-touch-callout: none) {
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+    }
+    
+    .input-group-text {
+        background: rgba(0, 30, 0, 0.7);
+        border: 1px solid #00ff64;
+        color: #00ff64;
+    }
+    
+    .password-toggle {
+        background: rgba(0, 30, 0, 0.7);
+        border: 1px solid #00ff64;
+        color: #00ff64;
+        transition: all 0.3s;
+    }
+    
+    .password-toggle:hover {
+        background: rgba(0, 50, 0, 0.9);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(to bottom, #00cc50, #008030);
+        border: 1px solid #00ff64;
+        color: #000;
+        font-weight: bold;
+        padding: 0.625rem 1.25rem;
+        transition: all 0.3s;
+        letter-spacing: 1px;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(to bottom, #00ff70, #00aa50);
+        box-shadow: 0 0 15px rgba(0, 255, 100, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-primary {
+        background: transparent;
+        border: 1px solid #00ff64;
+        color: #00ff64;
+        transition: all 0.3s;
+    }
+    
+    .btn-outline-primary:hover {
+        background: rgba(0, 255, 100, 0.2);
+        box-shadow: 0 0 15px rgba(0, 255, 100, 0.3);
+    }
+    
+    .modal-content {
+        background: rgba(10, 15, 10, 0.98);
+        border: 1px solid #00ff64;
+        border-radius: 10px;
+        color: #00ff64;
+        box-shadow: 0 0 25px rgba(0, 255, 100, 0.4);
+        margin: 1rem;
+        width: auto;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid rgba(0, 255, 100, 0.3);
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(0, 255, 100, 0.3);
+    }
+    
+    .btn-close {
+        filter: invert(1);
+    }
+    
+    .glow-text {
+        text-shadow: 0 0 5px rgba(0, 255, 100, 0.7);
+    }
+    
+    .digitize {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+    
+    .modal {
+        z-index: 1050; /* Higher than default */
+    }
+    
+    .modal-backdrop {
+        z-index: 1040; /* Just below modal */
+    }
+    
+    .modal-dialog {
+        pointer-events: auto;
+        margin: 0.5rem auto;
+        max-width: 95%;
+    }
+    
+    @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 500px;
+            margin: 1.75rem auto;
+        }
+    }
+    
+    body.modal-open {
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<canvas id="matrix-bg"></canvas>
+<div class="container-fluid login-container">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="login-card">
+                <div class="matrix-header">
+                    <i class="bi bi-shield-lock matrix-icon"></i>
+                    <h2 class="digitize">IVESTMENT-GATE</h2>
+                    <h4 class="digitize" style="color: #00ff64;font-size: medium;">Your Mission,Our Support</h4>
+                    <h4 class="digitize" style="color: #00ff64;font-size: small;">INFORMATION TECHNOLOGY PORTAL</h4>
+                    <p class="text-muted" style="color: #00ff95!important;font-size: smaller;">Authentication Required</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label for="username" class="form-label digitize">USER ID</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            {{ form.username(class="form-control digitize", placeholder="Enter username") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label digitize">PASSCODE</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            {{ form.password(class="form-control digitize", placeholder="Enter password", id="password") }}
+                            <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary digitize" id="loginButton">
+                            <span class="spinner-border spinner-border-sm d-none" id="loginSpinner" role="status" aria-hidden="true"></span>
+                            <span id="loginText">ACCESS SYSTEM</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-2 text-muted"style="color: red!important;">No credentials detected</p>
+                    <a href="mailto:ahbahaa@investmentgate.net?subject=Request%20Access%20to%20Caribou%20Support%20System&body=Full%20Name%3A%0D%0AEmail%3A%0D%0ALocation%3A%0D%0A%0D%0AAdditional%20Information%3A" class="btn btn-outline-primary digitize">
+                        <i class="bi bi-envelope me-1"></i> REQUEST ACCESS VIA EMAIL
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Access Modal -->
+<div class="modal fade" id="requestAccessModal" tabindex="-1" aria-labelledby="requestAccessModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered mw-100 mx-2">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title digitize glow-text" id="requestAccessModalLabel">ACCESS REQUEST</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="requestAccessForm" method="POST" action="{{ url_for('request_access') }}">
+                {{ form.hidden_tag() }}  
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label digitize">FULL Name</label>
+                        <input type="text" class="form-control digitize" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label digitize">E-Mail</label>
+                        <input type="email" class="form-control digitize" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label digitize">LOCATION</label>
+                        <input type="text" class="form-control digitize" id="location" name="location" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label digitize">PASSWORD</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control digitize" id="newPassword" name="password" required>
+                            <button class="btn btn-outline-secondary password-toggle" type="button" id="toggleNewPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text text-muted">Security key must be at least 8 characters</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label digitize">ADDITIONAL DATA</label>
+                        <textarea class="form-control digitize" id="message" name="message" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary digitize" data-bs-dismiss="modal">ABORT</button>
+                    <button type="submit" class="btn btn-primary digitize" id="submitRequest">
+                        <span id="submitText">TRANSMIT REQUEST</span>
+                        <span class="spinner-border spinner-border-sm d-none" id="submitSpinner" role="status" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Matrix background effect
+    const canvas = document.getElementById('matrix-bg');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        
+        const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * 100;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff64';
+            ctx.font = `${fontSize}px monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+            
+            requestAnimationFrame(drawMatrix);
+        }
+        
+        drawMatrix();
+        
+        window.addEventListener('resize', function() {
+            resizeCanvas();
+        });
+    }
+
+    // Toggle password visibility
+    function setupPasswordToggle(buttonId, inputId) {
+        const toggleBtn = document.getElementById(buttonId);
+        const input = document.getElementById(inputId);
+        
+        if (toggleBtn && input) {
+            toggleBtn.addEventListener('click', function() {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('bi-eye');
+                    icon.classList.toggle('bi-eye-slash');
+                }
+            });
+        }
+    }
+
+    // Setup password toggles
+    setupPasswordToggle('togglePassword', 'password');
+    setupPasswordToggle('toggleNewPassword', 'newPassword');
+
+    // Handle form submission with loading state
+    const loginForm = document.querySelector('form[action$="login"]');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const spinner = document.getElementById('loginSpinner');
+            const text = document.getElementById('loginText');
+            
+            if (submitBtn && spinner && text) {
+                submitBtn.disabled = true;
+                spinner.classList.remove('d-none');
+                text.textContent = 'AUTHENTICATING...';
+            }
+        });
+    }
+
+    // Handle request access form submission
+    const requestForm = document.getElementById('requestAccessForm');
+    if (requestForm) {
+        requestForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            if (submitButton && submitText && submitSpinner) {
+                // Show loading state
+                submitButton.disabled = true;
+                submitText.textContent = 'TRANSMITTING...';
+                submitSpinner.classList.remove('d-none');
+                
+                // Get form data
+                const formData = new FormData(this);
+                
+                // Send form data to server
+                fetch('{{ url_for("request_access") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alert(data.message);
+                        // Reset form and hide modal
+                        this.reset();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('requestAccessModal'));
+                        modal.hide();
+                    } else {
+                        // Show error message
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again later.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitButton.disabled = false;
+                    submitText.textContent = 'TRANSMIT REQUEST';
+                    submitSpinner.classList.add('d-none');
+                });
+            }
+        });
+    }
+    
+    // Initialize Bootstrap
+    var bootstrap = bootstrap || {};
+    
+    // Manually initialize the modal
+    var requestAccessModal = document.getElementById('requestAccessModal');
+    if (requestAccessModal) {
+        // Initialize modal if not already initialized
+        if (!bootstrap.Modal.getInstance(requestAccessModal)) {
+            var modal = new bootstrap.Modal(requestAccessModal, {
+                backdrop: 'static', // Prevent closing when clicking outside
+                keyboard: false,    // Prevent closing with ESC key
+                focus: true         // Focus on the modal when opened
+            });
+            
+            // Handle modal show event
+            requestAccessModal.addEventListener('show.bs.modal', function() {
+                // Reset form when shown
+                var form = document.getElementById('requestAccessForm');
+                if (form) form.reset();
+                
+                // Force focus to the first input
+                setTimeout(function() {
+                    var firstInput = requestAccessModal.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }, 100);
+            });
+            
+            // Handle modal shown event
+            requestAccessModal.addEventListener('shown.bs.modal', function() {
+                // Ensure modal is interactive
+                requestAccessModal.style.display = 'block';
+                requestAccessModal.style.pointerEvents = 'auto';
+                
+                // Force focus to the first input
+                var firstInput = requestAccessModal.querySelector('input');
+                if (firstInput) firstInput.focus();
+            });
+            
+            // Handle modal hide event
+            requestAccessModal.addEventListener('hide.bs.modal', function() {
+                // Clean up if needed
+            });
+            
+            // Make sure modal is accessible via keyboard
+            requestAccessModal.setAttribute('tabindex', '-1');
+            requestAccessModal.setAttribute('aria-hidden', 'false');
+        }
+    }
+});
+</script>
+{% endblock %}

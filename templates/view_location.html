@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}{{ location.name }} - Location Details | IT Support{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header with Breadcrumb -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('locations') }}">Locations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ location.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0 text-gray-800">{{ location.name }}</h1>
+            <p class="mb-0">Location details and equipment inventory</p>
+        </div>
+        <div class="mt-2">
+            <a href="{{ url_for('edit_location', location_id=location.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Edit Location
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Equipment Count</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ equipment|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-laptop fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Active Tickets</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_tickets_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Operational Equipment</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ equipment|selectattr('status', 'equalto', 'Operational')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Maintenance Required</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ equipment|selectattr('status', 'equalto', 'In Maintenance')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tools fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Location Details Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Location Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-2 text-gray-400"></i>Address
+                                </h6>
+                                <p class="mb-1">
+                                    {% if location.address %}
+                                        {{ location.address }}
+                                        {% if location.city or location.state or location.postal_code %}<br>{% endif %}
+                                        {% if location.city %}{{ location.city }}{% endif %}
+                                        {% if location.state %}, {{ location.state }}{% endif %}
+                                        {% if location.postal_code %}, {{ location.postal_code }}{% endif %}
+                                    {% else %}
+                                        <span class="text-muted">No address provided</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            {% if location.description %}
+                            <div class="mb-4">
+                                <h6 class="text-muted mb-2">
+                                    <i class="fas fa-info-circle me-2 text-gray-400"></i>Description
+                                </h6>
+                                <p>{{ location.description }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-muted mb-2">
+                                    <i class="fas fa-address-book me-2 text-gray-400"></i>Contact Information
+                                </h6>
+                                <p class="mb-1">
+                                    {% if location.contact_person %}
+                                        <i class="fas fa-user me-2 text-gray-400"></i>{{ location.contact_person }}<br>
+                                    {% endif %}
+                                    {% if location.contact_phone %}
+                                        <i class="fas fa-phone-alt me-2 text-gray-400"></i>{{ location.contact_phone }}<br>
+                                    {% endif %}
+                                    {% if location.contact_email %}
+                                        <i class="fas fa-envelope me-2 text-gray-400"></i>
+                                        <a href="mailto:{{ location.contact_email }}">{{ location.contact_email }}</a>
+                                    {% endif %}
+                                    {% if not location.contact_person and not location.contact_phone and not location.contact_email %}
+                                        <span class="text-muted">No contact information available</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Equipment Inventory</h6>
+                    <a href="{{ url_for('add_equipment') }}?location_id={{ location.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus fa-sm text-white-50"></i> Add Equipment
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if equipment %}
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="equipmentTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Serial Number</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in equipment %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.type }}</td>
+                                            <td>{{ item.serial_number or 'N/A' }}</td>
+                                            <td>
+                                                {% if item.status == 'Operational' %}
+                                                    <span class="badge bg-success">{{ item.status }}</span>
+                                                {% elif item.status == 'In Maintenance' %}
+                                                    <span class="badge bg-warning">{{ item.status }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ item.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('view_equipment', equipment_id=item.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   data-bs-toggle="tooltip" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('edit_equipment', equipment_id=item.id) }}" 
+                                                   class="btn btn-sm btn-outline-secondary"
+                                                   data-bs-toggle="tooltip" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if total_pages > 1 %}
+                        <nav aria-label="Equipment pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous Page Link -->
+                                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('view_location', location_id=location.id, page=page-1) }}" 
+                                       {% if page == 1 %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <!-- Page Numbers -->
+                                {% for p in range(1, total_pages + 1) %}
+                                    <li class="page-item {% if p == page %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('view_location', location_id=location.id, page=p) }}">
+                                            {{ p }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                
+                                <!-- Next Page Link -->
+                                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('view_location', location_id=location.id, page=page+1) }}" 
+                                       {% if page == total_pages %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="text-center text-muted small">
+                                Showing {{ (page - 1) * per_page + 1 }} to {{ [page * per_page, total_equipment]|min }} of {{ total_equipment }} items
+                            </div>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-laptop fa-4x text-gray-300 mb-3"></i>
+                            <h5 class="text-gray-800">No Equipment Found</h5>
+                            <p class="text-muted">Get started by adding equipment to this location</p>
+                            <a href="{{ url_for('add_equipment') }}?location_id={{ location.id }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> Add Equipment
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('create_ticket') }}?location_id={{ location.id }}" 
+                       class="btn btn-primary btn-icon-split mb-3 w-100 text-start">
+                        <span class="icon text-white-50">
+                            <i class="fas fa-ticket-alt"></i>
+                        </span>
+                        <span class="text">Create Support Ticket</span>
+                    </a>
+                    
+                    <a href="{{ url_for('add_equipment') }}?location_id={{ location.id }}" 
+                       class="btn btn-success btn-icon-split mb-3 w-100 text-start">
+                        <span class="icon text-white-50">
+                            <i class="fas fa-laptop"></i>
+                        </span>
+                        <span class="text">Add New Equipment</span>
+                    </a>
+                    
+                    {% if current_user.role == 'admin' %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('edit_location', location_id=location.id) }}" 
+                       class="btn btn-outline-secondary btn-icon-split mb-2 w-100 text-start">
+                        <span class="icon text-gray-600">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        <span class="text">Edit Location Details</span>
+                    </a>
+                    
+                    <button type="button" class="btn btn-outline-danger btn-icon-split w-100 text-start" 
+                            data-bs-toggle="modal" data-bs-target="#deleteLocationModal">
+                        <span class="icon text-gray-600">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                        <span class="text">Delete Location</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Activity Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                    <a href="#" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_activity %}
+                        <div class="activity-feed">
+                            {% for activity in recent_activity %}
+                            <div class="activity-item d-flex mb-3">
+                                <div class="activity-badge bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                                     style="width: 36px; height: 36px;">
+                                    <i class="fas {{ 'fa-ticket-alt' if 'ticket' in activity.title.lower() else 'fa-laptop' }}"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1">{{ activity.title }}</h6>
+                                        <small class="text-muted">{{ activity.timestamp|datetimeformat('%b %d, %I:%M %p') }}</small>
+                                    </div>
+                                    <p class="small mb-1">{{ activity.description|truncate(50) }}</p>
+                                    <small class="text-muted">By {{ activity.user }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-history fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted mb-0">No recent activity</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Location Modal -->
+<div class="modal fade" id="deleteLocationModal" tabindex="-1" aria-labelledby="deleteLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger" id="deleteLocationModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Location
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ location.name }}</strong>? This action cannot be undone.</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This will permanently delete this location and all associated equipment records.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('delete_location', location_id=location.id) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i> Delete Location
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize tooltips
+$(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+    
+    // Initialize DataTable for equipment
+    $('#equipmentTable').DataTable({
+        "pageLength": 10,
+        "ordering": true,
+        "responsive": true,
+        "dom": '<"#toolbar">rtip',
+        "language": {
+            "search": "<i class='fa fa-search'></i>",
+            "searchPlaceholder": "Search equipment...",
+            "lengthMenu": "Show _MENU_ entries per page",
+            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty": "No entries found",
+            "infoFiltered": "(filtered from _MAX_ total entries)",
+            "paginate": {
+                "previous": "<i class='fas fa-chevron-left'></i>",
+                "next": "<i class='fas fa-chevron-right'></i>"
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Equipment - Investment Gate | IT Support{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Equipment Inventory</h1>
+        <a href="{{ url_for('add_equipment') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add Equipment
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filters</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="device_type" class="form-label">Device Type</label>
+                    <select class="form-select" id="device_type" name="device_type">
+                        <option value="">All Types</option>
+                        {% for type in device_types %}
+                            <option value="{{ type.device_type }}" 
+                                {% if current_filters.device_type == type.device_type %}selected{% endif %}>
+                                {{ type.device_type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        {% for status in statuses %}
+                            <option value="{{ status.status }}" 
+                                {% if current_filters.status == status.status %}selected{% endif %}>
+                                {{ status.status|title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="location_id" class="form-label">Location</label>
+                    <select class="form-select" id="location_id" name="location_id">
+                        <option value="">All Locations</option>
+                        {% for location in locations %}
+                            <option value="{{ location.id }}" 
+                                {% if current_filters.location_id == location.id|string %}selected{% endif %}>
+                                {{ location.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i> Apply Filters
+                    </button>
+                    <a href="{{ url_for('equipment') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Equipment Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">All Equipment</h6>
+            <span class="text-muted">{{ equipment_list|length }} of {{ total_items }} items</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Device Type</th>
+                            <th>Model</th>
+                            <th>Serial Number</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Purchase Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in equipment_list %}
+                        <tr>
+                            <td>#{{ item.id }}</td>
+                            <td>{{ item.device_type }}</td>
+                            <td>{{ item.model or 'N/A' }}</td>
+                            <td>{{ item.serial_number or 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if item.status == 'active' else 'secondary' if item.status == 'inactive' else 'warning' }}">
+                                    {{ item.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ item.location_name or 'Unassigned' }}</td>
+                            <td>{{ item.purchase_date|datetimeformat('%b %d, %Y') if item.purchase_date else 'N/A' }}</td>
+                            <td>
+                                <a href="{{ url_for('view_equipment', equipment_id=item.id) }}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_equipment', equipment_id=item.id) }}" 
+                                   class="btn btn-sm btn-outline-secondary" 
+                                   title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">No equipment found</div>
+                                <a href="{{ url_for('add_equipment') }}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus me-1"></i> Add Equipment
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                        <a class="page-link" 
+                           href="{{ url_for('equipment', page=current_page-1, **request.args) }}" 
+                           aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    
+                    {% for page_num in range(1, total_pages + 1) %}
+                        {% if page_num == current_page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="{{ url_for('equipment', page=page_num, **request.args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+                        <a class="page-link" 
+                           href="{{ url_for('equipment', page=current_page+1, **request.args) }}" 
+                           aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit filters when select changes
+        const filterSelects = document.querySelectorAll('#device_type, #status, #location_id');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

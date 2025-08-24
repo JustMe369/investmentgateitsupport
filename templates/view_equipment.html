@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ equipment.name }} - Equipment Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ equipment.name }}</h5>
+                    <div>
+                        <a href="{{ url_for('equipment') }}" class="btn btn-sm btn-outline-secondary me-1">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Equipment
+                        </a>
+                        <a href="{{ url_for('edit_equipment', equipment_id=equipment.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Type:</strong> {{ equipment.type or 'N/A' }}</p>
+                            <p class="mb-2"><strong>Model:</strong> {{ equipment.model or 'N/A' }}</p>
+                            <p class="mb-2"><strong>Serial Number:</strong> {{ equipment.serial_number or 'N/A' }}</p>
+                            <p class="mb-2"><strong>Location:</strong> {{ equipment.location_name or 'Unassigned' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Purchase Date:</strong> {{ equipment.purchase_date|datetimeformat('%b %d, %Y') if equipment.purchase_date else 'N/A' }}</p>
+                            <p class="mb-2"><strong>Warranty Until:</strong> {{ equipment.warranty_until|datetimeformat('%b %d, %Y') if equipment.warranty_until else 'N/A' }}</p>
+                            <p class="mb-2"><strong>Status:</strong> 
+                                <span class="badge bg-{{ 'success' if equipment.status == 'active' else 'warning' }}">
+                                    {{ equipment.status|title or 'N/A' }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if equipment.notes %}
+                    <div class="mb-3">
+                        <h6>Notes:</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ equipment.notes|nl2br }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Maintenance History -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Maintenance History</h5>
+                    <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add Maintenance
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if maintenance %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Performed By</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in maintenance %}
+                                    <tr>
+                                        <td>{{ record.date_performed|datetimeformat('%b %d, %Y') }}</td>
+                                        <td>{{ record.maintenance_type|title }}</td>
+                                        <td>{{ record.performed_by_username or 'System' }}</td>
+                                        <td>{{ record.description|truncate(50) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">No maintenance records found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Equipment Details Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Equipment Details</h6>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Added On</span>
+                        <strong>{{ equipment.created_at|datetimeformat('%b %d, %Y') }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Last Updated</span>
+                        <strong>{{ equipment.updated_at|datetimeformat('%b %d, %Y') if equipment.updated_at else 'Never' }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Status</span>
+                        <span class="badge bg-{{ 'success' if equipment.status == 'active' else 'warning' }}">
+                            {{ equipment.status|title or 'N/A' }}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMaintenanceModal">
+                            <i class="bi bi-tools me-1"></i> Log Maintenance
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-text me-1"></i> Generate Report
+                        </a>
+                        <a href="#" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteEquipmentModal">
+                            <i class="bi bi-trash me-1"></i> Delete Equipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Maintenance Modal -->
+<div class="modal fade" id="addMaintenanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Maintenance Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_maintenance', equipment_id=equipment.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="maintenance_type" class="form-label">Maintenance Type</label>
+                        <select class="form-select" id="maintenance_type" name="maintenance_type" required>
+                            <option value="">Select type...</option>
+                            <option value="preventive">Preventive Maintenance</option>
+                            <option value="corrective">Corrective Maintenance</option>
+                            <option value="inspection">Inspection</option>
+                            <option value="repair">Repair</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_performed" class="form-label">Date Performed</label>
+                        <input type="date" class="form-control" id="date_performed" name="date_performed" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Maintenance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Equipment Modal -->
+<div class="modal fade" id="deleteEquipmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this equipment? This action cannot be undone.</p>
+                <p class="fw-bold">{{ equipment.name }} ({{ equipment.model or 'No Model' }})</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('delete_equipment', equipment_id=equipment.id) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this equipment? This action cannot be undone.');">Delete Equipment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set today's date as default for maintenance date
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date_performed').value = today;
+    });
+</script>
+{% endblock %}

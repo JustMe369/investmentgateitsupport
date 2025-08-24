@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Open Tickets{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 1.5rem;
+    }
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 1rem 1.35rem;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .user-profile-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 5px solid #fff;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    .ticket-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #4e73df;
+    }
+    .ticket-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1.5rem 0.15rem rgba(58, 59, 69, 0.2);
+    }
+    .ticket-priority {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+    .priority-high { background-color: #f8d7da; color: #721c24; }
+    .priority-medium { background-color: #fff3cd; color: #856404; }
+    .priority-low { background-color: #d4edda; color: #155724; }
+    .location-info {
+        background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);
+        border-radius: 10px;
+        padding: 1.5rem;
+        height: 100%;
+    }
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1.5rem 0.15rem rgba(58, 59, 69, 0.15);
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4e73df;
+        margin: 0.5rem 0;
+    }
+    .stat-label {
+        color: #5a5c69;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .refresh-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+    .empty-state {
+        padding: 3rem 1rem;
+        text-align: center;
+        background: #f8f9fc;
+        border-radius: 0.35rem;
+        margin: 2rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Open Tickets Dashboard</h1>
+        <div class="d-none d-sm-inline-block">
+            <span class="badge bg-primary text-white px-3 py-2">
+                <i class="bi bi-person-badge me-1"></i>
+                {{ current_user.role|title }} Access
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number" id="open-tickets-count">{{ open_tickets_count or 0 }}</div>
+                <div class="stat-label">Open Tickets</div>
+                <i class="bi bi-ticket-detailed text-primary mt-2" style="font-size: 1.5rem;"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number" id="assigned-tickets-count">{{ assigned_tickets_count or 0 }}</div>
+                <div class="stat-label">Assigned to You</div>
+                <i class="bi bi-person-check text-success mt-2" style="font-size: 1.5rem;"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number" id="high-priority-count">{{ high_priority_count or 0 }}</div>
+                <div class="stat-label">High Priority</div>
+                <i class="bi bi-exclamation-triangle text-danger mt-2" style="font-size: 1.5rem;"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="stat-number" id="location-tickets-count">{{ location_tickets_count or 0 }}</div>
+                <div class="stat-label">Your Location</div>
+                <i class="bi bi-geo-alt text-info mt-2" style="font-size: 1.5rem;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- User Profile Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Profile</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="{{ url_for('static', filename='img/undraw_profile.svg') }}" 
+                             class="user-profile-img rounded-circle mb-3" 
+                             alt="User Profile">
+                        <h4>{{ current_user.full_name or current_user.username }}</h4>
+                        <span class="badge bg-primary text-white">{{ current_user.role|title }}</span>
+                    </div>
+                    <div class="text-start mt-4">
+                        <p><i class="bi bi-envelope me-2"></i> {{ current_user.email or 'No email provided' }}</p>
+                        <p><i class="bi bi-telephone me-2"></i> {{ current_user.phone or 'No phone provided' }}</p>
+                        <p><i class="bi bi-calendar-event me-2"></i> Member since {{ current_user.created_at|datetimeformat('%B %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Information -->
+            {% if user_location %}
+            <div class="card mt-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Location</h6>
+                </div>
+                <div class="card-body">
+                    <div class="location-info">
+                        <h5 class="font-weight-bold">{{ user_location.name }}</h5>
+                        <p class="mb-1"><i class="bi bi-geo-alt me-2"></i> {{ user_location.address }}</p>
+                        {% if user_location.contact_person %}
+                        <p class="mb-1"><i class="bi bi-person me-2"></i> {{ user_location.contact_person }}</p>
+                        {% endif %}
+                        {% if user_location.contact_phone %}
+                        <p class="mb-1"><i class="bi bi-telephone me-2"></i> {{ user_location.contact_phone }}</p>
+                        {% endif %}
+                        {% if user_location.anydesk_id %}
+                        <p class="mb-0"><i class="bi bi-display me-2"></i> AnyDesk ID: {{ user_location.anydesk_id }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Open Tickets List -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Open Tickets</h6>
+                    <a href="{{ url_for('tickets') }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-list-ul me-1"></i> View All
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tickets-table-body">
+                                {% for ticket in recent_tickets %}
+                                <tr>
+                                    <td>#{{ ticket.id }}</td>
+                                    <td>{{ ticket.title|truncate(30) }}</td>
+                                    <td>
+                                        <span class="ticket-priority priority-{{ ticket.priority|lower }}">
+                                            {{ ticket.priority }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="time-ago" data-time="{{ ticket.created_at }}">
+                                            {{ ticket.created_at|datetimeformat('%b %d, %Y') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if ticket.status == 'Open' %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ ticket.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="text-muted">No open tickets found</div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ url_for('create_ticket') }}" class="btn btn-primary btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="bi bi-plus-circle"></i>
+                                </span>
+                                <span class="text">New Ticket</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <a href="{{ url_for('tickets') }}" class="btn btn-success btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="bi bi-ticket-detailed"></i>
+                                </span>
+                                <span class="text">View All Tickets</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="#" class="btn btn-info btn-icon-split" id="refresh-dashboard">
+                                <span class="icon text-white-50">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </span>
+                                <span class="text">Refresh</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Refresh Button -->
+<button id="refresh-tickets" class="btn btn-primary refresh-btn" title="Refresh">
+    <i class="bi bi-arrow-clockwise"></i>
+</button>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Format relative time
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    let interval = Math.floor(seconds / 31536000);
+    if (interval > 1) return interval + ' years ago';
+    if (interval === 1) return '1 year ago';
+    
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) return interval + ' months ago';
+    if (interval === 1) return '1 month ago';
+    
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) return interval + ' days ago';
+    if (interval === 1) return '1 day ago';
+    
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) return interval + ' hours ago';
+    if (interval === 1) return '1 hour ago';
+    
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) return interval + ' minutes ago';
+    if (interval === 1) return '1 minute ago';
+    
+    return 'Just now';
+}
+
+// Update all time-ago elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Format time-ago elements
+    document.querySelectorAll('.time-ago').forEach(function(element) {
+        const timeString = element.getAttribute('data-time');
+        if (timeString) {
+            element.textContent = formatTimeAgo(timeString);
+        }
+    });
+    
+    // Auto-refresh every 30 seconds
+    const refreshInterval = setInterval(refreshDashboard, 30000);
+    
+    // Manual refresh buttons
+    document.getElementById('refresh-tickets').addEventListener('click', refreshDashboard);
+    document.getElementById('refresh-dashboard').addEventListener('click', function(e) {
+        e.preventDefault();
+        refreshDashboard();
+    });
+});
+
+// Refresh dashboard data
+function refreshDashboard() {
+    // Show loading state
+    const refreshBtn = document.getElementById('refresh-dashboard');
+    const icon = refreshBtn.querySelector('i');
+    icon.classList.add('spin');
+    
+    fetch(window.location.href + '&partial=1')
+        .then(response => response.json())
+        .then(data => {
+            // Update ticket counts
+            if (data.stats) {
+                document.getElementById('open-tickets-count').textContent = data.stats.open_tickets || 0;
+                document.getElementById('assigned-tickets-count').textContent = data.stats.assigned_tickets || 0;
+                document.getElementById('high-priority-count').textContent = data.stats.high_priority || 0;
+                document.getElementById('location-tickets-count').textContent = data.stats.location_tickets || 0;
+            }
+            
+            // Update tickets table
+            if (data.tickets_html) {
+                document.getElementById('tickets-table-body').innerHTML = data.tickets_html;
+                
+                // Re-initialize time-ago for new elements
+                document.querySelectorAll('.time-ago').forEach(function(element) {
+                    const timeString = element.getAttribute('data-time');
+                    if (timeString) {
+                        element.textContent = formatTimeAgo(timeString);
+                    }
+                });
+            }
+            
+            // Show success message
+            showToast('Dashboard updated successfully', 'success');
+        })
+        .catch(error => {
+            console.error('Error refreshing dashboard:', error);
+            showToast('Error updating dashboard', 'error');
+        })
+        .finally(() => {
+            // Remove loading state
+            icon.classList.remove('spin');
+        });
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    // Check if toast container exists, if not create it
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.top = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast show align-items-center text-white bg-${type} border-0`;
+    toast.role = 'alert';
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    const toastBody = document.createElement('div');
+    toastBody.className = 'd-flex';
+    
+    const toastContent = document.createElement('div');
+    toastContent.className = 'toast-body';
+    toastContent.textContent = message;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'btn-close btn-close-white me-2 m-auto';
+    closeBtn.setAttribute('data-bs-dismiss', 'toast');
+    closeBtn.setAttribute('aria-label', 'Close');
+    
+    toastBody.appendChild(toastContent);
+    toastBody.appendChild(closeBtn);
+    toast.appendChild(toastBody);
+    
+    // Add to container
+    toastContainer.appendChild(toast);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+            // Remove container if empty
+            if (toastContainer.children.length === 0) {
+                toastContainer.remove();
+            }
+        }, 300);
+    }, 5000);
+}
+
+// Add spin animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .spin {
+        animation: spin 0.7s linear 1;
+    }
+    .toast {
+        margin-bottom: 0.5rem;
+        opacity: 1;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .toast.show {
+        display: block;
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

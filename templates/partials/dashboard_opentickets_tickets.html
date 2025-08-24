@@ -1,0 +1,33 @@
+{% for ticket in tickets %}
+<tr>
+    <td>#{{ ticket.id }}</td>
+    <td>{{ ticket.title|truncate(30) }}</td>
+    <td>
+        <span class="ticket-priority priority-{{ ticket.priority|lower }}">
+            {{ ticket.priority }}
+        </span>
+    </td>
+    <td>
+        <span class="time-ago" data-time="{{ ticket.created_at }}">
+            {{ ticket.created_at|datetimeformat('%b %d, %Y') }}
+        </span>
+    </td>
+    <td>
+        <span class="badge {% if ticket.status == 'Open' %}bg-warning{% else %}bg-success{% endif %}">
+            {{ ticket.status }}
+        </span>
+    </td>
+    <td>
+        <a href="{{ url_for('view_ticket', ticket_id=ticket.id) }}" 
+           class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-eye"></i>
+        </a>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="6" class="text-center py-4">
+        <div class="text-muted">No open tickets found</div>
+    </td>
+</tr>
+{% endfor %}

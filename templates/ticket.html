@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.id }} - Caribou IT Support{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('tickets') }}">Tickets</a></li>
+                    <li class="breadcrumb-item active">#{{ ticket.id }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ ticket.title }}</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Ticket Info -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Ticket Details</h5>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-{{ 'success' if ticket.status == 'closed' else 'warning' if ticket.status == 'in_progress' else 'primary' }} me-2">
+                            {{ ticket.status|replace('_', ' ')|title }}
+                        </span>
+                        <span class="badge bg-{{ 'danger' if ticket.priority == 'high' else 'warning' if ticket.priority == 'medium' else 'secondary' }} me-2">
+                            {{ ticket.priority|title }}
+                        </span>
+                        {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Description</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ ticket.description|nl2br|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Comments</h5>
+                </div>
+                <div class="card-body">
+                    {% if comments %}
+                        {% for comment in comments|sort(attribute='created_at') %}
+                            <div class="mb-4 pb-3 border-bottom">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        {{ comment.user.full_name|first|upper }}
+                                    </div>
+                                    <div class="ms-2">
+                                        <div class="fw-bold">{{ comment.user.full_name }}</div>
+                                        <small class="text-muted">{{ comment.created_at|datetimeformat('%b %d, %Y %I:%M %p') }}</small>
+                                    </div>
+                                </div>
+                                <div class="ms-4 ps-3">
+                                    {{ comment.content|nl2br|safe }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4 text-muted">
+                            No comments yet.
+                        </div>
+                    {% endif %}
+
+                    <!-- Add Comment -->
+                    <form method="POST" action="{{ url_for('add_comment', ticket_id=ticket.id) }}" class="mt-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <textarea class="form-control" name="content" rows="3" required placeholder="Add a comment..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Post Comment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status Update -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_ticket_status', ticket_id=ticket.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <select class="form-select" name="status">
+                                {% for status in ['open', 'in_progress', 'on_hold', 'closed'] %}
+                                    <option value="{{ status }}" {% if ticket.status == status %}selected{% endif %}>
+                                        {{ status|replace('_', ' ')|title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Ticket Details -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Details</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Created by:</strong> {{ ticket.created_by.full_name }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Created:</strong> {{ ticket.created_at|datetimeformat('%b %d, %Y %I:%M %p') }}
+                        </li>
+                        {% if ticket.assigned_to %}
+                        <li class="mb-2">
+                            <strong>Assigned to:</strong> {{ ticket.assigned_to.full_name }}
+                        </li>
+                        {% endif %}
+                        <li class="mb-2">
+                            <strong>Location:</strong> 
+                            {% if ticket.location %}
+                                {{ ticket.location.name }}
+                                {% if ticket.location.address %}
+                                    <br><small class="text-muted">{{ ticket.location.address }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </li>
+                        {% if ticket.equipment %}
+                        <li class="mb-2">
+                            <strong>Equipment:</strong> {{ ticket.equipment.device_type }} - {{ ticket.equipment.model }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

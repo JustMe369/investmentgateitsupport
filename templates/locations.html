@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Locations - Investment Gate | IT Support{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header with Stats -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">Locations</h1>
+            <p class="mb-0">Manage all your business locations in one place</p>
+        </div>
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('add_location') }}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add Location
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Locations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ locations|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-map-marker-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Equipment</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ locations|sum(attribute='equipment_count') }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-laptop fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Active Locations</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ locations|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Primary Location</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% for loc in locations if loc.is_primary %}{{ loc.name }}{% else %}Not set{% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Locations Grid -->
+    <div class="row">
+        {% for location in locations %}
+        <div class="col-xl-4 col-lg-6 mb-4">
+            <div class="card border-left-{% if location.is_primary %}primary{% else %}info{% endif %} shadow h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-{% if location.is_primary %}primary{% else %}info{% endif %}">
+                        {{ location.name }}
+                        {% if location.is_primary %}
+                            <span class="badge bg-primary ms-2">Primary</span>
+                        {% endif %}
+                    </h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink-{{ location.id }}" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuLink-{{ location.id }}">
+                            <li><a class="dropdown-item" href="{{ url_for('view_location', location_id=location.id) }}">
+                                <i class="fas fa-eye fa-sm me-2"></i>View Details
+                            </a></li>
+                            {% if current_user.role == 'admin' %}
+                            <li><a class="dropdown-item" href="{{ url_for('edit_location', location_id=location.id) }}">
+                                <i class="fas fa-edit fa-sm me-2"></i>Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger delete-location" 
+                                  href="{{ url_for('delete_location', location_id=location.id) }}">
+                                <i class="fas fa-trash-alt fa-sm me-2"></i>Delete
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-map-marker-alt me-2 text-gray-400"></i>
+                        <span class="text-muted">
+                            {% if location.address %}
+                                {{ location.address }}
+                                {% if location.city %}, {{ location.city }}{% endif %}
+                                {% if location.state %}, {{ location.state }}{% endif %}
+                                {% if location.postal_code %}, {{ location.postal_code }}{% endif %}
+                            {% else %}
+                                No address provided
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <i class="fas fa-laptop me-2 text-gray-400"></i>
+                        <span class="text-muted">
+                            {{ location.equipment_count }} equipment item{% if location.equipment_count != 1 %}s{% endif %}
+                        </span>
+                    </div>
+                    {% if location.contact_person or location.contact_phone or location.contact_email %}
+                    <div class="border-top pt-3 mt-3">
+                        <h6 class="small fw-bold text-uppercase text-gray-600 mb-2">Contact</h6>
+                        {% if location.contact_person %}
+                        <p class="mb-1">
+                            <i class="fas fa-user me-2 text-gray-400"></i>
+                            {{ location.contact_person }}
+                        </p>
+                        {% endif %}
+                        {% if location.contact_phone %}
+                        <p class="mb-1">
+                            <i class="fas fa-phone-alt me-2 text-gray-400"></i>
+                            <a href="tel:{{ location.contact_phone }}" class="text-decoration-none">
+                                {{ location.contact_phone }}
+                            </a>
+                        </p>
+                        {% endif %}
+                        {% if location.contact_email %}
+                        <p class="mb-0">
+                            <i class="fas fa-envelope me-2 text-gray-400"></i>
+                            <a href="mailto:{{ location.contact_email }}" class="text-decoration-none">
+                                {{ location.contact_email }}
+                            </a>
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{{ url_for('view_location', location_id=location.id) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        View Details <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript functionality here
+        // For example, confirmation dialogs for delete actions
+        document.querySelectorAll('.delete-location').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to delete this location? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
